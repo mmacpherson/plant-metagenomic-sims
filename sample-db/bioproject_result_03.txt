@@ -1,0 +1,6 @@
+
+1. DOE Joint Genome Institute Populus deltoides EST project
+Organism: Populus deltoides (Taxonomy ID 3696)
+BioProject Accession: PRJNA79589
+ID: 79589
+

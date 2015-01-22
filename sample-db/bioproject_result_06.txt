@@ -1,0 +1,6 @@
+
+1. Poa pratensis strain:Cabernet Transcriptome or Gene expression
+Organism: Poa pratensis (Taxonomy ID 4545)
+BioProject Accession: PRJNA183212
+ID: 183212
+

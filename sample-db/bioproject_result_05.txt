@@ -1,0 +1,6 @@
+
+1. Kochia scoparia Transcriptome
+Organism: Bassia scoparia (Taxonomy ID 83154)
+BioProject Accession: PRJNA239752
+ID: 239752
+

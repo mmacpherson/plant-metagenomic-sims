@@ -1,0 +1,6 @@
+
+1. Populus deltoides Genome sequencing
+Organism: Populus deltoides (Taxonomy ID 3696)
+BioProject Accession: PRJNA232573
+ID: 232573
+

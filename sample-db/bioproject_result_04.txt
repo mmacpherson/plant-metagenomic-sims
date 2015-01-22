@@ -1,0 +1,6 @@
+
+1. Broussonetia papyrifera Transcriptome or Gene expression
+Organism: Broussonetia papyrifera (Taxonomy ID 172644)
+BioProject Accession: PRJNA219364
+ID: 219364
+

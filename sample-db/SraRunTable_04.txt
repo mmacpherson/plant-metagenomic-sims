@@ -1,0 +1,2 @@
+Assay_Type_s	AssemblyName_s	BioProject_s	BioSample_s	BioSampleModel_s	Center_Name_s	Consent_s	InsertSize_l	Library_Name_s	LoadDate_s	MBases_l	MBytes_l	Platform_s	ReleaseDate_s	Run_s	SRA_Sample_s	SRA_Study_s	Sample_Name_s	breed_s	g1k_analysis_group_s	g1k_pop_code_s	source_s
+RNA-Seq	<not provided>	PRJNA219364	SAMN02357080	Generic	INSTITUTE OF BOTANY, THE CHINESE ACADEMY OF SCIENC	public	0	<not provided>	Jun 30, 2014	5429	3585	ILLUMINA	Sep 16, 2014	SRR1477753	SRS481293	SRP029966	Root, stem and leaf	Paper mulberry	<not provided>	<not provided>	<not provided>

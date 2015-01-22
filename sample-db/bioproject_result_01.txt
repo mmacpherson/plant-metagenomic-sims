@@ -1,0 +1,6 @@
+
+1. Populus tremuloides Transcriptome or Gene expression
+Organism: Populus tremuloides (Taxonomy ID 3693)
+BioProject Accession: PRJNA172770
+ID: 172770
+
