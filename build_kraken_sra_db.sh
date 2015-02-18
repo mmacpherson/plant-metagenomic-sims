@@ -6,12 +6,6 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 for fn in $(find $PLANT_GENOMES_DB -name "*.sra")
 do
-    # asm_report=${fn/genomic.fna.gz/assembly_report.txt}
-    # if [ ! -e $asm_report ]
-    # then
-    # 	echo "Missing assembly report for $fn"
-    # 	continue
-    # fi
     bfn=$(basename $fn)
     runid=${bfn/.sra/}
     uncompressed=/tmp/${bfn/.gz/}
