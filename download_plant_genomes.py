@@ -64,12 +64,11 @@ def main(args):
             for waf in wanted_assembly_files:
                 dl_size = ftp_file_size(host, waf)
                 download_size += dl_size
-                print pgd, waf
-                if dl_size < 52428800:
-                    print >> sys.stderr, "Downloading [%s]" % waf
-                    host.download(waf, waf)
+                ## if dl_size < 52428800:
+                print >> sys.stderr, "Downloading [%s] (%0.1f MB)" % (waf, dl_size / float(2 ** 20))
+                host.download(waf, waf)
             os.chdir('..')
-        print "Total download size (GB) %0.2f" % (download_size / float(2 ** 30))
+        print >> sys.stderr, "Total download size (GB) %0.2f" % (download_size / float(2 ** 30))
 
 
 if __name__ == '__main__':
