@@ -52,22 +52,26 @@ def main(args):
                     "Multiple assemblies found for [%s]." % pgd
             host.chdir(assembly[0])
             assembly_files = host.listdir(host.curdir)
+
             wanted_assembly_files = [e for e in assembly_files
                                      if e.endswith('_assembly_report.txt') or
                                      e.endswith('.fna.gz') or
                                      e == 'md5checksums.txt'
             ]
-
             if not os.path.exists(pgd):
                 os.mkdir(pgd)
-            os.chdir(pgd)
+            # os.chdir(pgd)
             for waf in wanted_assembly_files:
+                # if os.path.exists(waf):
+                #     print >> sys.stderr, "File [%s] present, skipping" % waf
+                #     continue
                 dl_size = ftp_file_size(host, waf)
                 download_size += dl_size
                 ## if dl_size < 52428800:
                 print >> sys.stderr, "Downloading [%s] (%0.1f MB)" % (waf, dl_size / float(2 ** 20))
-                host.download(waf, waf)
-            os.chdir('..')
+                print "wget --no-clobber -O %s/%s ftp://%s/%s/%s/%s/%s/%s" % (pgd, waf, NCBI_SERVER, PLANTS_DIR, pgd, dirname, assembly[0], waf)
+                # host.download(waf, waf)
+            # os.chdir('..')
         print >> sys.stderr, "Total download size (GB) %0.2f" % (download_size / float(2 ** 30))
 
 

@@ -1,18 +1,18 @@
 #!/bin/sh
 
-FASTQ_PATH=${HOME}/sra-fastq
-KG_BIN=${HOME}/src/kmergenie-1.6950/kmergenie
+SRA_PATH=${HOME}/sras
+KG_BIN=${HOME}/src/kmergenie-1.6982/kmergenie
 
 where=$(pwd)
-cd $FASTQ_PATH
-for fqfile in $(ls ${FASTQ_PATH}/*.fastq.gz)
+cd $SRA_PATH
+for fqfile in $(ls ${SRA_PATH}/fastq/*.fastq.gz)
 do
     fqbase=$(basename $fqfile)
-    kmerdir=${fqbase/.fastq.gz/.kmergenie}
+    kmerdir=kmergenie-runs/${fqbase/.fastq.gz/.kmergenie}
     mkdir -p $kmerdir
     cd $kmerdir
     # $KG_BIN --diploid -t 63 $fqfile
     $KG_BIN -t 63 $fqfile
-    cd $FASTQ_PATH
+    cd $SRA_PATH
 done
 cd $where
