@@ -1,0 +1,5 @@
+/sra/sra-instant/reads/ByRun/sra/SRR/SRR546/SRR546216/SRR546216.sra
+/sra/sra-instant/reads/ByRun/sra/SRR/SRR650/SRR650432/SRR650432.sra
+/sra/sra-instant/reads/ByRun/sra/SRR/SRR112/SRR1121649/SRR1121649.sra
+/sra/sra-instant/reads/ByRun/sra/SRR/SRR119/SRR1198350/SRR1198350.sra
+/sra/sra-instant/reads/ByRun/sra/SRR/SRR512/SRR512810/SRR512810.sra

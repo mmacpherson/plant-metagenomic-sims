@@ -1,0 +1,1 @@
+~/.aspera/connect/bin/ascp -T -l 23000 -k2 -i /home/macpherson/.aspera/connect/etc/asperaweb_id_dsa.openssh --user anonftp --host ftp.ncbi.nlm.nih.gov --mode recv --file-list ~/plant-metagenomic-sims/second_largest_sras.files.txt ~/ncbi/public/sra/
