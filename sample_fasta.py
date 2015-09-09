@@ -18,15 +18,17 @@ if len(args) > 2:
 CACHE_FILE = ".seqcache"
 
 def load_json(infile):
-    return json.load(open(infile))
+    with open(infile) as fp:
+        return json.load(fp)
 
 def save_json(cache, outfile):
-    json.dump(cache, open(outfile, 'w'))
+    with open(outfile, 'w') as fp:    
+        json.dump(cache, fp)
 
 def count_compressed_fasta_sequences(fname):
     return int(subprocess.check_output(['zgrep', '-c', '^>', fname]))
 
-def get_average_fasta_read_length(fname, n=100):
+def get_average_fasta_read_length(fname, n=200):
     it = skb.parse.sequences.load(fname)
     acc = []
     for rec in it:
@@ -40,22 +42,29 @@ try:
 except IOError:
     cache = {'num_sequences': {}, 'avg_read_length': {}}
 
-if infile in cache:
-    num_sequences = cache['num_sequences'][infile]
-    read_length = cache['avg_read_length'][infile]
+tag = os.path.basename(infile)
+if tag in cache['num_sequences'] and tag in cache['avg_read_length']:
+    print >> sys.stderr, 'Loading from cache [%s]' % tag
+    num_sequences = cache['num_sequences'][tag]
+    read_length = cache['avg_read_length'][tag]
 else:
+    print >> sys.stderr, 'Analyzing [%s]' % tag
     num_sequences = count_compressed_fasta_sequences(infile)
     read_length = get_average_fasta_read_length(infile)
-    cache['num_sequences'][infile] = num_sequences
-    cache['avg_read_length'][infile] = read_length
+    cache['num_sequences'][tag] = num_sequences
+    cache['avg_read_length'][tag] = read_length
+    print >> sys.stderr, 'Caching [%s] analysis' % tag
     save_json(cache, CACHE_FILE)
+
+if n <= 0:
+    sys.exit(0)
 
 if ln is None or (ln < read_length):
     which_sequences = set(random.sample(xrange(num_sequences), n))
 else:
     total_sequence_bp = ln * n
     expected_num_reads_needed = total_sequence_bp / read_length
-    draw = int(expected_num_reads_needed * 1.10) # 10% cushion
+    draw = int(expected_num_reads_needed * 1.01) # 1% cushion
     which_sequences = set(random.sample(xrange(num_sequences), draw))
 
 def random_substring(st, k):
@@ -73,7 +82,7 @@ def total_length(sequences):
 def take(seqs, n):
     return random_substring('N'.join(seqs), n)
 
-tag = infile.split('.')[0]
+tag = os.path.basename(infile).split('.')[0]
 it = skb.parse.sequences.load(infile)
 acc = []
 n_seqs_produced = 0

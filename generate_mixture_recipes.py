@@ -1,4 +1,5 @@
 import sys
+import os
 import math
 
 TAB = '\t'
@@ -24,19 +25,29 @@ GENOME_SIZE = AttrDict({ # all in Mbp
     SP.ATRI: 4000,
     SP.AART: 570,
     SP.PPRA: 2600,
-    SP.ZMAY: 2500
+    SP.ZMAY: 2500,
 })
 
-SRA = AttrDict({
+SRA_IN = AttrDict({
     SP.PTRE: 'SRR540223',
     SP.PDEL: 'SRR1121654',
     SP.BPAP: 'SRR1477753',
     SP.BSCO: 'SRR1198330',
+    SP.PPRA: 'SRR769554',
+})
+
+SRA_OUT = AttrDict({
+    SP.PTRE: 'SRR546216',
+    SP.PDEL: 'SRR1121649',
+    SP.BSCO: 'SRR1198350',
+    SP.PPRA: 'SRR650432',
     SP.ATRI: 'SRR058121',
     SP.AART: 'ERR231632',
-    SP.PPRA: 'SRR769554',
-    #SP.ZMAY: ''
+    SP.ZMAY: 'SRR1575525',
 })
+
+# SRA = SRA_IN
+SRA = SRA_OUT
 
 mixtures = [
 
@@ -44,19 +55,31 @@ mixtures = [
 
     # ((SP.BPAP, 1), (SP.ATRI, 1), (SP.ZMAY, 1), (SP.BSCO, 1), (SP.PPRA, 1)),
 
-    ((SP.PTRE, 1), (SP.PDEL, 1)),
+    # ((SP.PTRE, 1), (SP.PDEL, 1)),
 
     # ((SP.PPRA, 1), (SP.ZMAY, 1)),
 
-    ((SP.BPAP, 1), (SP.ATRI, 1)),
+    # ((SP.BPAP, 1), (SP.ATRI, 1)),
 
-    ((SP.BPAP, 1), (SP.PPRA, 1)),
+    # ((SP.BPAP, 1), (SP.PPRA, 1)),
 
-    ((SP.BPAP, 1), (SP.PPRA, 9)),
+    # ((SP.BPAP, 1), (SP.PPRA, 9)),
 
-    ((SP.BPAP, 1), (SP.PPRA, 19)),
+    # ((SP.BPAP, 1), (SP.PPRA, 19)),
 
-    ((SP.BPAP, 1), (SP.PPRA, 99)),
+    # ((SP.BPAP, 1), (SP.PPRA, 99)),
+
+    ((SP.PTRE, 1),),
+    ((SP.PDEL, 1),),
+    ((SP.BSCO, 1),),
+    ((SP.PPRA, 1),),
+
+    # ((SP.BPAP, 1),),
+
+    ((SP.ATRI, 1),),
+    ((SP.AART, 1),),
+    ((SP.ZMAY, 1),),
+    
 ]
 
 def sra2seq(sra):
@@ -66,39 +89,50 @@ def normalize(v):
     s = float(sum(v))
     return [e / s for e in v]
 
-def generate_mixture_targets(mixture, seq_mbp, read_len, idn):
+def gen_mixture_label(mixspec):
+    return '_'.join('%s-%s' % (sp[:5].replace('_', ''), pr) for (sp, pr) in mixspec)
+
+def generate_mixture_targets(mixture, fspath, seqpath, seq_mbp, read_len, idn):
     species, proportions = zip(*mixture)
     gsizes = [float(GENOME_SIZE[sp]) for sp in species]
     weighted_props = normalize([p * g for (p, g) in zip(proportions, gsizes)])
     sras = [SRA[sp] for sp in species]
     out = []
     targets = []
+    prefix = 'mix%s-%s' % (seq_mbp, idn)
     for (i, (s, w, f)) in enumerate(zip(species, weighted_props, sras)):
-        target = 'mix-%s.%d.fa' % (idn, i)
+        target = '%s.%d.fa' % (prefix, i)
         target_bp = seq_mbp * w * 1e6
         num_reads = int(math.ceil(target_bp / float(read_len)))
-        cmd = "python $(HOME)/src/plant-metagenomic-sims/sample_fasta.py %s %s %s > %s" % (sra2seq(f), num_reads, read_len, target)
+        cmd = "python %s %s %s %s  > %s" % (fspath, os.path.join(seqpath, sra2seq(f)), num_reads, read_len, target)
         out += ['%s:' % target]
         out += ['%s%s' % (TAB, cmd)]
         out += ['']
         targets += [target]
 
-    target = 'mix-%s.fa' % idn
+    target = '%s.fa.gz' % prefix
     targets = ' '.join(targets)
     out += ['%s: %s' % (target, targets)]
-    out += ['%scat %s > %s' % (TAB, targets, target)]
+    out += ['%scat %s | pigz > %s' % (TAB, targets, target)]
     out += ['']
 
     return target, '\n'.join(out)
 
 
-SEQUENCE_MBP = 1 # how many Mbp will be sequenced
+SEQUENCE_MBP = 100 # how many Mbp will be sequenced
 READ_LENGTH  = 500 # platform read length, in bp
 
+args = sys.argv[1:]
+fspath, seqpath = args
+
+makelines = []
 targets = []
-for i, mix in enumerate(mixtures):
-    target, make = generate_mixture_targets(mix, SEQUENCE_MBP, READ_LENGTH, i + 1)
-    print make
+for mix in mixtures:
+    label = gen_mixture_label(mix)
+    target, make = generate_mixture_targets(mix, fspath, seqpath, SEQUENCE_MBP, READ_LENGTH, label)
+    makelines.append(make)
     targets += [target]
 
-print 'all: %s' % ' '.join(targets)
+makelines = ['all: %s' % ' '.join(targets), ''] + makelines
+
+print '\n'.join(makelines)

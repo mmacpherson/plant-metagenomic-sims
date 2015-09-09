@@ -4,7 +4,7 @@ MINIA_BIN=${HOME}/src/minia-2.0.3-Linux/bin/minia
 KG_SCRIPT=${HOME}/plant-metagenomic-sims/grab_kmergenie_winner.py
 
 SRA_PATH=${HOME}/sras
-FASTQ_PATH=${SRA_PATH}/fastq
+FASTQ_PATH=${SRA_PATH}/fastq2
 KG_PATH=${SRA_PATH}/kmergenie-runs
 MINIA_PATH=${SRA_PATH}/assemblies
 
