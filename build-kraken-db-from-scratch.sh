@@ -1,3 +1,5 @@
+# Notes and pseudo or real code on how to build the kraken db from
+# scratch.
 
 # generate list of all available plant genomes from NCBI
 python ~/plant-metagenomic-sims/generate_plant_genomes_download_script.py > plant-genome-download.sh 2> plant-genome-download.log
