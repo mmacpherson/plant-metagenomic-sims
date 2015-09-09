@@ -10,20 +10,8 @@ REP_DIR = 'representative'
 REF_DIR = 'reference'
 LATEST_DIR = 'latest_assembly_versions'
 
-def ftp_file_size(host, fn):
-    try:
-        return host.stat(fn)[-4]
-    except ftputil.error.PermanentError:
-        try:
-            return host.lstat(fn)[-4]
-        except ftputil.error.PermanentError:
-            return None
-
-def first_matching(items, ordered_matches):
-    for match in ordered_matches:
-        if match in items:
-            return match
-    return None
+def matchup(items, ordered_matches):
+    return [match for match in ordered_matches if match in items]
 
 def main(args):
     with ftputil.FTPHost(NCBI_SERVER, 'anonymous', 'a@b.c') as host:
@@ -32,47 +20,50 @@ def main(args):
         plant_genome_dirs = host.listdir(host.curdir)
         download_size = 0
         for pgd in plant_genome_dirs:
-            host.chdir(os.path.join(plants_dir, pgd))
+            pgd_home = os.path.join(plants_dir, pgd)
+            if not host.path.isdir(pgd_home):
+                continue
+            host.chdir(pgd_home)
             entries = host.listdir(host.curdir)
-            dirname = first_matching(entries,
-                                   (REP_DIR, REF_DIR, LATEST_DIR))
-            if dirname is None:
+            dirnames = matchup(entries, (REP_DIR, REF_DIR, LATEST_DIR))
+            if not dirnames:
                 print >> sys.stderr, \
                     "No data folder found for [%s]." % pgd
                 continue
 
-            host.chdir(dirname)
-            assembly = host.listdir(host.curdir)
-            if len(assembly) == 0:
-                print >> sys.stderr, \
-                    "No data found within folder for [%s]." % pgd
-                continue
-            elif len(assembly) > 1:
-                print >> sys.stderr, \
-                    "Multiple assemblies found for [%s]." % pgd
-            host.chdir(assembly[0])
-            assembly_files = host.listdir(host.curdir)
+            for dirname in dirnames:
+                host.chdir(dirname)
+                assembly = host.listdir(host.curdir)
+                if len(assembly) == 0:
+                    print >> sys.stderr, \
+                        "No data found within folder for [%s]." % pgd
+                    # -- Go back to plant's main dir and try next available.
+                    host.chdir(pgd_home)
+                    continue
+                elif len(assembly) > 1:
+                    print >> sys.stderr, \
+                        "Multiple assemblies found for [%s]." % pgd
 
-            wanted_assembly_files = [e for e in assembly_files
-                                     if e.endswith('_assembly_report.txt') or
-                                     e.endswith('.fna.gz') or
-                                     e == 'md5checksums.txt'
-            ]
-            if not os.path.exists(pgd):
-                os.mkdir(pgd)
-            # os.chdir(pgd)
-            for waf in wanted_assembly_files:
-                # if os.path.exists(waf):
-                #     print >> sys.stderr, "File [%s] present, skipping" % waf
-                #     continue
-                dl_size = ftp_file_size(host, waf)
-                download_size += dl_size
-                ## if dl_size < 52428800:
-                print >> sys.stderr, "Downloading [%s] (%0.1f MB)" % (waf, dl_size / float(2 ** 20))
-                print "wget --no-clobber -O %s/%s ftp://%s/%s/%s/%s/%s/%s" % (pgd, waf, NCBI_SERVER, PLANTS_DIR, pgd, dirname, assembly[0], waf)
-                # host.download(waf, waf)
-            # os.chdir('..')
-        print >> sys.stderr, "Total download size (GB) %0.2f" % (download_size / float(2 ** 30))
+                # -- This means pick the first-listed
+                #    assembly when several are present.
+                host.chdir(assembly[0])
+                assembly_files = host.listdir(host.curdir)
+
+                wanted_assembly_files = [e for e in assembly_files
+                                         if e.endswith('_assembly_report.txt') or
+                                         e.endswith('.fna.gz') or
+                                         e == 'md5checksums.txt'
+                ]
+
+                if not os.path.exists(pgd):
+                    os.mkdir(pgd)
+
+                for waf in wanted_assembly_files:
+                    print "mkdir -p %s && wget --no-clobber -O %s/%s ftp://%s/%s/%s/%s/%s/%s" % (pgd, pgd, waf, NCBI_SERVER, PLANTS_DIR, pgd, dirname, assembly[0], waf)
+
+                # -- Stop trying to dl a genome after the first one
+                #    that works.
+                break
 
 
 if __name__ == '__main__':
