@@ -1,0 +1,6 @@
+
+1. Artemisia tridentata subsp. tridentata strain:UTT2 Transcriptome or Gene expression
+Organism: Artemisia tridentata subsp. tridentata (Taxonomy ID 525641)
+BioProject Accession: PRJNA258169
+ID: 258169
+
