@@ -20,19 +20,10 @@ do
     aid=$(grep "^ID:" $bp | cut -d" " -f2)
 
     echo "$title|$org|$taxid|$accession|$aid" >> $metabp
-    # -- clean up sra summary file
-    # srac=${sra}foon
-    # grep -v "Experiment Accession" $sra | tr -d '"' | tr "," "|" > $srac
-
-    # while read line
-    # do
-    # 	echo "$title|$org|$taxid|$accession|$aid|$line"
-    # done < $srac
-
-    # rm -f $srac
 done
 csvsql $metabp --db sqlite:///$rundb --insert --tables projects
 
+keep='"Experiment Accession","Experiment Title","Organism Name","Instrument","Submitter","Study Accession","Study Title","Sample Accession","Sample Title","Total RUNs","Total Spots","Total Bases","Library Name","Library Strategy","Library Source","Library Selection"'
 for srares in $(ls sra_result_??.csv)
 do
     create=""
@@ -40,8 +31,9 @@ do
     then
 	create="--no-create"
     fi
-    csvsql $srares --db sqlite:///$rundb --insert --tables sra_result $create
-    echo $srares $(sqlite3 $rundb "select count(*) from sra_result")
+    echo csvcut -c $keep $srares
+    csvcut -c $keep $srares | csvsql --db sqlite:///$rundb --insert --tables sra_result $create
+    echo "SRA Result Row Count:" $srares $(sqlite3 $rundb "select count(*) from sra_result")
 done
 
 keep=Assay_Type_s,AssemblyName_s,BioProject_s,BioSampleModel_s,BioSample_s,Center_Name_s,Consent_s,g1k_analysis_group_s,g1k_pop_code_s,InsertSize_l,Library_Name_s,LoadDate_s,MBases_l,MBytes_l,Platform_s,ReleaseDate_s,Run_s,Sample_Name_s,source_s,SRA_Sample_s,SRA_Study_s
@@ -53,7 +45,7 @@ do
 	create="--no-create"
     fi
     csvcut -t $srarun -c $keep | csvsql --db sqlite:///$rundb --insert --tables sra_runs $create
-    echo $srarun $(sqlite3 $rundb "select count(*) from sra_runs")
+    echo "SRA Result Run Count:" $srarun $(sqlite3 $rundb "select count(*) from sra_runs")
 done
 
 rm -f $metabp
